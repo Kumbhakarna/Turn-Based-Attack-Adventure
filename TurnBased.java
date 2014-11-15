@@ -1,72 +1,210 @@
-import java.applet.Applet;
+import java.applet.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.awt.*;
 
-public class TurnBased extends Applet implements MouseListener{
-    Rectangle okBox;
-    Boolean okBoxChecker = false;
-    public void paint(Graphics g) {
-        play(g);
+
+public class TurnBased extends Applet
+    implements MouseListener, MouseMotionListener {
+    
+    int width, height;
+    ChoosenOne player = new ChoosenOne();
+    boolean message1 = true;
+    boolean message0 = true;
+    boolean message2 = true;
+    boolean mouseIn = false;
+    boolean choosingClass = true;
+    boolean mageDscpt;
+    boolean warriorDscpt;
+    boolean rangerDscpt;
+    Image image;
+    Graphics graphics;
+    Scanner scan = new Scanner(System.in);
+    int mouseX = -1, mouseY = -1;  // the mouse coordinates
+    boolean isButtonPressed = false;
+    int control = 0;
+    
+    Rectangle message1Box;
+    Rectangle message2Box;
+    Rectangle warrior;
+    Rectangle ranger;
+    Rectangle mage;
+    
+    public void init() {
+        if (control == 0)
+            setBackground(Color.BLACK);
+        control++;
+        addMouseListener( this );
+        addMouseMotionListener( this );
     }
-    public void update(Graphics g, int delay) {
-        try { 
-            Thread.sleep(delay);
-        } 
-        catch (Exception e) {
+    
+    public void mouseEntered( MouseEvent e ) {
+        mouseIn = true;
+        // called when the pointer enters the applet's rectangular area
+    }
+    public void mouseExited( MouseEvent e ) {
+        mouseIn = false;
+        // called when the pointer leaves the applet's rectangular area
+    }
+    public void mouseClicked( MouseEvent e ) {
+        if (mouseIn && message2Box.contains(e.getX(),e.getY())){
+            message2 = false;
         }
-        clearScreen(g);
+      //  if (mouseIn && mage.contains(e.getX(),e.getY())) {
+        // called after a press and release of a mouse button
+        // with no motion in between
+        // (If the user presses, drags, and then releases, there will be
+        // no click event generated.)
+    }
+    public void mousePressed( MouseEvent e ) {  // called after a button is pressed down
+        repaint();
+        // "Consume" the event so it won't be processed in the
+        // default manner by the source which generated it.
+        e.consume();
+    }
+    public void mouseReleased( MouseEvent e ) {  // called after a button is released
+        repaint();
+        e.consume();
+    }
+    public void mouseMoved( MouseEvent e ) {  // called during motion when no buttons are down
+        mouseX = e.getX();
+        mouseY = e.getY();
+        if (mouseIn && mage.contains(e.getX(),e.getY())) {
+            mageDscpt = true;
+        }
+        if (mouseIn && warrior.contains(e.getX(),e.getY())) {
+            warriorDscpt = true;
+        }
+        if (mouseIn && ranger.contains(e.getX(),e.getY())) {
+            rangerDscpt = true;
+        }
+        //System.out.println( "Mouse at (" + mouseX + "," + mouseY + ")" );
+        repaint();
+        
+        e.consume();
+    }
+    public void mouseDragged( MouseEvent e ) {  // called during motion with buttons down
+        mouseX = e.getX();
+        mouseY = e.getY();
+        System.out.println( "Mouse at (" + mouseX + "," + mouseY + ")" );
+        repaint();
+        e.consume();
     }
     
-    public void clearScreen(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(0,0,2000,1000);
-    }
-    
-    public void play(Graphics g) {
-        beginningDialog(g);
-    }
-    
-    public void beginningDialog(Graphics g) {
-        update(g,0);
-        while (!okBoxChecker) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Large",0,14));
-        g.drawString("It's Time.",25,25);
-        g.setColor(Color.RED);
-        g.drawRect(355,50,25,25);
-        okBox= new Rectangle(355,50,25,25);
-        g.setColor(Color.WHITE);
-        g.fillRect(356,51,23,23);
-        g.setColor(Color.BLUE);
-        g.setFont(new Font("Small",0,10));
-        g.drawString("OK",360,65);
+    public void delay(int time) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(time);
         }
         catch (Exception e) {
         }
+    }
+    
+    public void clear() {
+        setBackground(Color.BLACK);
+    }
+    public void paint( Graphics g ) {
+        if (message0) {
+            g.setColor(Color.WHITE);
+            g.drawString("Please enter your name", 25,25);
+            try {
+                player.name = scan.nextLine();
+            }
+            catch (Exception e) {
+                player.name = "Zero";
+                repaint();
+                return;
+            }
+            if (player.name.length() > 0)
+                message0 = false;
+        } else {
+            if (message1) {
+                clear();
+                g.setColor(Color.WHITE);
+                g.drawString("Please choose your class:", 25,25);
+                g.setColor(new Color(200,40,40));
+                g.fillRect(50,50,75,50);
+                warrior = new Rectangle(50,50,75,50);
+                g.setColor(Color.WHITE);
+                g.drawString("WARRIOR",57,77);
+                g.drawString("WARRIOR",57,78);
+                g.setColor(Color.GREEN);
+                g.fillRect(150,50,75,50);
+                ranger = new Rectangle(150,50,75,50);
+                g.setColor(new Color(90,90,10));
+                g.drawString("RANGER",159,77);
+                g.drawString("RANGER",159,78);
+                g.setColor(new Color(40,40,200));
+                g.fillRect(250,50,75,50);
+                mage = new Rectangle(250,50,75,50);
+                g.setColor(new Color(200,200,20));
+                g.drawString("MAGE",270,78);
+                g.drawString("MAGE",270,79);
+                if (mageDscpt) {
+                    g.drawString("A Master of all things arcane, Intellect",25,200);
+                    g.drawString("guides this sorcerer through the evil ahead.",25,210);
+                    delay(400);
+                    clear();
+                    mageDscpt = false;
+                }
+                if (warriorDscpt) {
+                    g.drawString("A Man broken down, with nothing to lose,",25,200);
+                    g.drawString("is ready to use his brute strength to ",25,210);
+                    g.drawString("destroy all evils ahead.",25,220);
+                     delay(400);
+                    clear();
+                    warriorDscpt = false;
+                }
+                if (rangerDscpt) {
+                    g.drawString("Once hailed as the greatest archerer of ",25,200);
+                    g.drawString("all the land, he is forced in hiding from the world,",25,210);
+                    g.drawString("faced now with the evils ahead as a falsely accused man.",25,220);
+                     delay(400);
+                    clear();
+                    rangerDscpt = false;
+                }
+                        
+                                     
+                                     
+            }
+            
+        else {
+            if (message2) {
+                g.setColor(Color.WHITE);
+                g.drawString("It's Time..", 25,25);
+                g.setColor(Color.RED);
+                g.drawRect(300,30,20,17);
+                g.setColor(Color.WHITE);
+                g.fillRect(301,31,19,16);
+                g.setColor(Color.BLUE);
+                g.drawString("Ok",302,42);
+                message1Box = new Rectangle(301,31,19,16);
+            }
+            else {
+                clear();
+                g.setColor(Color.WHITE);
+                g.drawString("You are the choosen one.",25,25);
+            }
         }
-        update(g,250);
-    }
-    
-    public void mouseClicked(MouseEvent e) {
-        if (okBox.contains(e.getX(),e.getY())) {
-            okBoxChecker = true;
         }
     }
-    
-    public void mouseEntered(MouseEvent e) {
+    public void update(Graphics g) {
+        if (image == null) {
+            image = createImage(this.getWidth(), this.getHeight());
+            graphics = image.getGraphics();
+        }
+        graphics.setColor(getBackground());
+        graphics.fillRect(0,  0,  this.getWidth(),  this.getHeight());
+        graphics.setColor(getForeground());
+        paint(graphics);
+        g.drawImage(image, 0, 0, this);
     }
     
-    public void mouseExited(MouseEvent e) {
+    public class ChoosenOne {
+        public String name;
+        public String type;
+        public ChoosenOne() {
+            
+        }
     }
-    
-    public void mousePressed(MouseEvent e) {
-    }
-    
-    public void mouseReleased(MouseEvent e) {
-    }
-        
-        
+            
 }
