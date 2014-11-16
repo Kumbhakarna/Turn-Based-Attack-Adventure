@@ -1,8 +1,13 @@
 import java.applet.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-
+import javax.swing.JApplet;
+import java.awt.*; 
+import java.net.*;
+import javax.imageio.*;
+import java.io.*;
+import java.awt.Graphics2D;
+import java.awt.image.*;
 
 public class TurnBased extends Applet
     implements MouseListener, MouseMotionListener {
@@ -19,16 +24,19 @@ public class TurnBased extends Applet
     boolean rangerDscpt;
     Image image;
     Graphics graphics;
+    BufferedImage magePhoto = null;
+    BufferedImage warriorPhoto = null;
+    BufferedImage rangerPhoto = null;
     Scanner scan = new Scanner(System.in);
-    int mouseX = -1, mouseY = -1;  // the mouse coordinates
+    int mouseX = -1000, mouseY = -1000;  // the mouse coordinates
     boolean isButtonPressed = false;
     int control = 0;
     
-    Rectangle message1Box;
+    Rectangle message1Box = new Rectangle(301,31,19,16);
     Rectangle message2Box;
-    Rectangle warrior;
-    Rectangle ranger;
-    Rectangle mage;
+    Rectangle warrior = new Rectangle(50,50,75,50);
+    Rectangle ranger = new Rectangle(150,50,75,50);
+    Rectangle mage = new Rectangle(250,50,75,50);
     
     public void init() {
         if (control == 0)
@@ -40,47 +48,48 @@ public class TurnBased extends Applet
     
     public void mouseEntered( MouseEvent e ) {
         mouseIn = true;
-        // called when the pointer enters the applet's rectangular area
     }
     public void mouseExited( MouseEvent e ) {
         mouseIn = false;
-        // called when the pointer leaves the applet's rectangular area
     }
-    public void mouseClicked( MouseEvent e ) {
-        if (mouseIn && message2Box.contains(e.getX(),e.getY())){
-            message2 = false;
+    public void mouseClicked(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+        if (message1 && mouseIn && mage.contains(mouseX,mouseY)) {
+            player.setType("mage");
+            message1 = false;
         }
-      //  if (mouseIn && mage.contains(e.getX(),e.getY())) {
-        // called after a press and release of a mouse button
-        // with no motion in between
-        // (If the user presses, drags, and then releases, there will be
-        // no click event generated.)
+        if (message1 && mouseIn && mage.contains(mouseX,mouseY)) {
+            player.setType("warrior");
+            message1 = false;
+        }
+        if (message1 && mouseIn && mage.contains(mouseX,mouseY)) {
+            player.setType("ranger");
+            message1 = false;
+        }
     }
     public void mousePressed( MouseEvent e ) {  // called after a button is pressed down
         repaint();
-        // "Consume" the event so it won't be processed in the
-        // default manner by the source which generated it.
         e.consume();
     }
-    public void mouseReleased( MouseEvent e ) {  // called after a button is released
+    public void mouseReleased( MouseEvent e ) {  
         repaint();
         e.consume();
     }
-    public void mouseMoved( MouseEvent e ) {  // called during motion when no buttons are down
+    public void mouseMoved( MouseEvent e ) {  
         mouseX = e.getX();
         mouseY = e.getY();
-        if (mouseIn && mage.contains(e.getX(),e.getY())) {
+        if (mouseIn && mage.contains(mouseX,mouseY)) {
             mageDscpt = true;
         }
-        if (mouseIn && warrior.contains(e.getX(),e.getY())) {
+        if (mouseIn && warrior.contains(mouseX,mouseY)) {
             warriorDscpt = true;
         }
-        if (mouseIn && ranger.contains(e.getX(),e.getY())) {
+        if (mouseIn && ranger.contains(mouseX,mouseY)) {
             rangerDscpt = true;
         }
-        //System.out.println( "Mouse at (" + mouseX + "," + mouseY + ")" );
-        repaint();
         
+        repaint();
         e.consume();
     }
     public void mouseDragged( MouseEvent e ) {  // called during motion with buttons down
@@ -98,23 +107,44 @@ public class TurnBased extends Applet
         catch (Exception e) {
         }
     }
+    public void imageCreater(Graphics g) {
+          try {
+            URL u = new URL(getCodeBase(), "Mage.png");
+            magePhoto = ImageIO.read(u);
+        }   catch (IOException e) {
+            g.drawString("Problem reading the file", 100, 100);
+        }
+        try {
+            URL u = new URL(getCodeBase(), "Warrior.png");
+            warriorPhoto = ImageIO.read(u);
+        }   catch (IOException e) {
+            g.drawString("Problem reading the file", 100, 100);
+        }
+        try {
+            URL u = new URL(getCodeBase(), "Ranger.png");
+            rangerPhoto = ImageIO.read(u);
+        }   catch (IOException e) {
+            g.drawString("Problem reading the file", 100, 100);
+        }
+    }
     
     public void clear() {
         setBackground(Color.BLACK);
     }
-    public void paint( Graphics g ) {
+    public void paint(Graphics g) {
+        imageCreater(g);
         if (message0) {
             g.setColor(Color.WHITE);
             g.drawString("Please enter your name", 25,25);
             try {
-                player.name = scan.nextLine();
+                player.setName(scan.nextLine());
             }
             catch (Exception e) {
-                player.name = "Zero";
+                player.setName("Zero");
                 repaint();
                 return;
             }
-            if (player.name.length() > 0)
+            if (player.getName().length() > 0)
                 message0 = false;
         } else {
             if (message1) {
@@ -123,41 +153,42 @@ public class TurnBased extends Applet
                 g.drawString("Please choose your class:", 25,25);
                 g.setColor(new Color(200,40,40));
                 g.fillRect(50,50,75,50);
-                warrior = new Rectangle(50,50,75,50);
                 g.setColor(Color.WHITE);
                 g.drawString("WARRIOR",57,77);
                 g.drawString("WARRIOR",57,78);
                 g.setColor(Color.GREEN);
                 g.fillRect(150,50,75,50);
-                ranger = new Rectangle(150,50,75,50);
                 g.setColor(new Color(90,90,10));
                 g.drawString("RANGER",159,77);
                 g.drawString("RANGER",159,78);
                 g.setColor(new Color(40,40,200));
                 g.fillRect(250,50,75,50);
-                mage = new Rectangle(250,50,75,50);
+
                 g.setColor(new Color(200,200,20));
                 g.drawString("MAGE",270,78);
                 g.drawString("MAGE",270,79);
                 if (mageDscpt) {
-                    g.drawString("A Master of all things arcane, Intellect",25,200);
-                    g.drawString("guides this sorcerer through the evil ahead.",25,210);
+                    g.drawString("A Master of all things arcane, Intellect",25,210);
+                    g.drawImage(magePhoto,25,100,100,100,null);
+                    g.drawString("guides this sorcerer through the evil ahead.",25,220);
                     delay(400);
                     clear();
                     mageDscpt = false;
                 }
                 if (warriorDscpt) {
-                    g.drawString("A Man broken down, with nothing to lose,",25,200);
-                    g.drawString("is ready to use his brute strength to ",25,210);
-                    g.drawString("destroy all evils ahead.",25,220);
+                    g.drawImage(warriorPhoto,25,100,100,100,null);
+                    g.drawString("A Man broken down, with nothing to lose,",25,210);
+                    g.drawString("is ready to use his brute strength to ",25,220);
+                    g.drawString("destroy all evils ahead.",25,230);
                      delay(400);
                     clear();
                     warriorDscpt = false;
                 }
                 if (rangerDscpt) {
-                    g.drawString("Once hailed as the greatest archerer of ",25,200);
-                    g.drawString("all the land, he is forced in hiding from the world,",25,210);
-                    g.drawString("faced now with the evils ahead as a falsely accused man.",25,220);
+                    g.drawImage(rangerPhoto,25,100,100,100,null);
+                    g.drawString("Once hailed as the greatest archerer of ",25,210);
+                    g.drawString("all the land, he is forced in hiding from the world,",25,220);
+                    g.drawString("faced now with the evils ahead as a falsely accused man.",25,230);
                      delay(400);
                     clear();
                     rangerDscpt = false;
@@ -177,7 +208,7 @@ public class TurnBased extends Applet
                 g.fillRect(301,31,19,16);
                 g.setColor(Color.BLUE);
                 g.drawString("Ok",302,42);
-                message1Box = new Rectangle(301,31,19,16);
+                //if (player.
             }
             else {
                 clear();
@@ -198,13 +229,4 @@ public class TurnBased extends Applet
         paint(graphics);
         g.drawImage(image, 0, 0, this);
     }
-    
-    public class ChoosenOne {
-        public String name;
-        public String type;
-        public ChoosenOne() {
-            
-        }
     }
-            
-}
